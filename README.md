@@ -1,5 +1,5 @@
 
-## Using Selenium with Python ##
+# Using Selenium with Python #
 You can find information on how to get started with selenium in python here:
 
 https://www.youtube.com/watch?v=Xjv1sY630Uc&list=PLzMcBGfZo4-n40rB1XaJ0ak1bemvlqumQ
@@ -9,7 +9,7 @@ This is a video playlist from a channel called "Tech With Tim".
 This selenium tutorial is designed for beginners to learn how to use the python selenium module to perform web scraping, web testing and create website bots. Selenium is an automation framework that allows you to interact with websites using something called a web driver.
 
 
-# Resources You Will Need ##
+## Resources You Will Need ##
 How to Fix Pip:
 https://www.youtube.com/watch?v=AdUZArA-kZw
 
@@ -20,7 +20,7 @@ Selenium Documentation:
 https://selenium-python.readthedocs.io/
 
 
-# Getting Started #
+## Getting Started ##
  High level steps to get started quickly:
 
 1. Install python if necessary
