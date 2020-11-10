@@ -30,6 +30,6 @@ https://selenium-python.readthedocs.io/
 5. For Windows OS, you can simply copy the .exe into C:\Program Files (x86)\ 
 6. You will need to reference the OS file path for the web-driver .exe you just installed above.
 
-You can take a look at a working sample module at ./ssc/ssc_search_test.py
+You can take a look at a working sample module at ./examples/ssc_search_test.py
 
  
