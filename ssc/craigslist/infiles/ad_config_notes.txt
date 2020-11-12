@@ -1,0 +1,9 @@
+
+
+Post Category:
+fso = For Sale by Owner
+fsd = For Sale by Dealer
+[fsd] Heavy Equipment value=194 ($5/ad), Farm & Garden value=178 ($3/ad)
+[fso] Heavy Equipment value=193 (free), Farm & Garden value=133 (free)
+
+Ad fields are the same for fso/fsd, so you can change between the two post types freely (as of 11/11/20).
