@@ -1,7 +1,8 @@
 {
+    "post_states" : ["Maryland"],
     "post_type" : "fso",
     "post_category" : "133",
-    "post_price" : "1299",
+    "post_price" : "795",
     "post_email" : "sales@skidsteercabs.com",
     "post_city" : "Frostburg, MD",
     "postal_code" : "21532",
