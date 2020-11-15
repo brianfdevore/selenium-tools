@@ -25,7 +25,7 @@ https://selenium-python.readthedocs.io/
 
 1. Install python if necessary
 2. Install pip if necessary
-3. "pip install selenium" to install the Selenium package for python (test with "import selenium")
+3. Install required pip packages with "pip install -r requirements.txt".  The primary packages are "selenium" and click".  "pip install selenium" to install the Selenium package for python (test with "import selenium")
 4. Navigate to Selenium web-driver downloads link above and download the .exe for your OS.  Note that you must download the correct web-driver for your version of Chrome.  Go to Chrome > 3 dots menu > Help > About Chrome to get current version.
 5. For Windows OS, you can simply copy the .exe into C:\Program Files (x86)\ 
 6. You will need to reference the OS file path for the web-driver .exe you just installed above.

@@ -16,8 +16,18 @@ def find(browser):
         return False
 
 def do_browser_init():
-    # init browser and navigate to Craigslist
+    # init browser and navigate to Craigslist, login and send to post page
     driver = webdriver.Chrome('..\\..\\chromedriver.exe')
+
+    # do login
+    config = get_config()
+    driver.get('https://accounts.craigslist.org/login/home')
+    username = driver.find_element_by_xpath("//input[@id='inputEmailHandle']")
+    username.send_keys(config['username'])
+    password = driver.find_element_by_xpath("//input[@id='inputPassword']")
+    password.send_keys(config['password'])
+    driver.find_element_by_xpath('//button[@id="login"]').click()
+    time.sleep(2)
     driver.get('https://post.craigslist.org/')
     return driver
 
@@ -148,8 +158,8 @@ def post_ads():
             browser.find_element_by_xpath('//li[@id="ui-id-4"]').click()
 
             # email
-            email = browser.find_element_by_xpath('//input[@name="FromEMail"]')
-            email.send_keys(config['post_email'])
+            #email = browser.find_element_by_xpath('//input[@name="FromEMail"]')
+            #email.send_keys(config['post_email'])
 
             # continue button
             browser.find_element_by_xpath('//button[@name="go" and @value="continue"]').click()

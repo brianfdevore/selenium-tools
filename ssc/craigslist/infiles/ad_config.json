@@ -1,7 +1,7 @@
 {
     "post_states" : ["Maryland"],
-    "post_type" : "fso",
-    "post_category" : "133",
+    "post_type" : "fsd",
+    "post_category" : "178",
     "post_price" : "795",
     "post_email" : "sales@skidsteercabs.com",
     "post_city" : "Frostburg, MD",
@@ -9,5 +9,7 @@
     "post_title" : "SkidSteerCabs.com | Skid Steer Cab Enclosures & Attachments",
     "he_manufacturer" : "All",
     "he_model" : "All",
-    "he_size" : "All"
+    "he_size" : "All",
+    "username" : "sales@skidsteercabs.com",
+    "password" : "SSC!advert123"
 }
