@@ -1,5 +1,5 @@
 {
-    "post_states" : ["Maryland"],
+    "post_states" : ["Delaware"],
     "post_type" : "fsd",
     "post_category" : "178",
     "post_price" : "795",
@@ -9,7 +9,5 @@
     "post_title" : "SkidSteerCabs.com | Skid Steer Cab Enclosures & Attachments",
     "he_manufacturer" : "All",
     "he_model" : "All",
-    "he_size" : "All",
-    "username" : "sales@skidsteercabs.com",
-    "password" : "SSC!advert123"
+    "he_size" : "All"
 }

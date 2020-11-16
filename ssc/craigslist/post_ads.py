@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 import os.path
 import json
 import click
-
+import boto3
 
 def find(browser):
     add_images = browser.find_element_by_xpath('//input[@name="file"]')
@@ -20,12 +20,12 @@ def do_browser_init():
     driver = webdriver.Chrome('..\\..\\chromedriver.exe')
 
     # do login
-    config = get_config()
+    creds = get_account_creds()
     driver.get('https://accounts.craigslist.org/login/home')
     username = driver.find_element_by_xpath("//input[@id='inputEmailHandle']")
-    username.send_keys(config['username'])
+    username.send_keys(creds['username'])
     password = driver.find_element_by_xpath("//input[@id='inputPassword']")
-    password.send_keys(config['password'])
+    password.send_keys(creds['password'])
     driver.find_element_by_xpath('//button[@id="login"]').click()
     time.sleep(2)
     driver.get('https://post.craigslist.org/')
@@ -75,6 +75,83 @@ def get_states_regions():
     with open('.\\outfiles\\regions_from_cl_us_by_state.json') as f2:
         sr_dict = json.load(f2)
         return sr_dict
+
+def get_account_creds():
+    client = boto3.client('ssm')
+    uname = client.get_parameter(
+        Name = '/apps/craigslist/accounts/ssc1/username'
+    )
+    pwd = client.get_parameter(
+        Name = '/apps/craigslist/accounts/ssc1/password',
+        WithDecryption=True
+    )
+
+    creds = { 
+        'username' : uname['Parameter']['Value'],
+        'password' : pwd['Parameter']['Value']
+     }
+
+    return creds
+
+def get_payment_info():
+    client = boto3.client('ssm')
+    num = client.get_parameter(
+        Name = '/payment_cards/ssc/card_number',
+        WithDecryption=True
+    )
+    exp = client.get_parameter(
+        Name = '/payment_cards/ssc/expiration',
+        WithDecryption=True
+    )
+
+    cvv = client.get_parameter(
+        Name = '/payment_cards/ssc/cvv',
+        WithDecryption=True
+    )
+
+    add = client.get_parameter(
+        Name = '/payment_cards/ssc/address',
+        WithDecryption=True
+    )
+
+    first = client.get_parameter(
+        Name = '/payment_cards/ssc/first_name',
+        WithDecryption=True
+    )
+
+    last = client.get_parameter(
+        Name = '/payment_cards/ssc/last_name',
+        WithDecryption=True
+    )
+
+    city = client.get_parameter(
+        Name = '/payment_cards/ssc/city',
+        WithDecryption=True
+    )
+
+    state = client.get_parameter(
+        Name = '/payment_cards/ssc/state',
+        WithDecryption=True
+    )
+
+    zip = client.get_parameter(
+        Name = '/payment_cards/ssc/zip',
+        WithDecryption=True
+    )
+
+    params = { 
+        'card_number' : num['Parameter']['Value'],
+        'expiration_date' : exp['Parameter']['Value'],
+        'cvv' : cvv['Parameter']['Value'],
+        'address' : add['Parameter']['Value'],
+        'first_name' : first['Parameter']['Value'],
+        'last_name' : last['Parameter']['Value'],
+        'city' : city['Parameter']['Value'],
+        'state' : state['Parameter']['Value'],
+        'zip_code' : zip['Parameter']['Value'],
+     }
+
+    return params
 
 def post_ads():
     config = get_config()
@@ -200,6 +277,33 @@ def post_ads():
 
             # publish button (last step for ad creation, commits purchase)
             browser.find_element_by_xpath('//button[@value="Continue"]').click()
+
+            # click the continue button to proceed with payment for the post
+            browser.find_element_by_xpath('//button[@name="go"]').click()
+
+            # submit the payment card info on the payment page
+            card = get_payment_info()
+            f_name = browser.find_element_by_xpath('//input[@id="cardFirstName"]')
+            f_name.send_keys(card['first_name'])
+            l_name = browser.find_element_by_xpath('//input[@id="cardLastName"]')
+            l_name.send_keys(card['last_name'])
+            number = browser.find_element_by_xpath('//input[@id="cardNumber"]')
+            number.send_keys(card['card_number'])
+            exp_date = browser.find_element_by_xpath('//input[@id="expDate"]')
+            exp_date.send_keys(card['expiration_date'])
+            cvv = browser.find_element_by_xpath('//input[@id="cvNumber"]')
+            cvv.send_keys(card['cvv'])
+            address = browser.find_element_by_xpath('//input[@name="cardAddress"]')
+            address.send_keys(card['address'])
+            zip = browser.find_element_by_xpath('//input[@id="cardPostal"]')
+            zip.send_keys(card['zip_code'])
+            # city = browser.find_element_by_xpath('//input[@id="cardCity"]')
+            # city.send_keys(card['city'])
+            # state = browser.find_element_by_xpath('//input[@id="cardState"]')
+            # state.send_keys(card['state'])
+            time.sleep(1)
+            browser.find_element_by_xpath('//button[@id="submitter"]').click()
+            time.sleep(15)
 
             # close the browser instance
             browser.quit()

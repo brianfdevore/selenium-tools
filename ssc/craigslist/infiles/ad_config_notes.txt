@@ -7,3 +7,6 @@ fsd = For Sale by Dealer
 [fso] Heavy Equipment value=193 (free), Farm & Garden value=133 (free)
 
 Ad fields are the same for fso/fsd, so you can change between the two post types freely (as of 11/11/20).
+
+Craigslist Account Credentials & Payment Info:
+This information is stored in AWS SSM Parameter Store, and retrieved via Boto3 client for SSM.
