@@ -236,6 +236,20 @@ def post_ads():
             browser.find_element_by_xpath('//span[@id="ui-id-2-button"]').click()
             browser.find_element_by_xpath('//li[@id="ui-id-4"]').click()
 
+            # # show my phone number
+            # browser.find_element_by_xpath('//input[@name="show_phone_ok"]').click()
+
+            # # phone calls okay
+            # browser.find_element_by_xpath('//input[@name="contact_phone_ok"]').click()
+
+            # # phone number
+            # phone = browser.find_element_by_xpath('//input[@name="contact_phone"]').click()
+            # phone.send_keys(config['contact_phone'])  #<-- failing here with "NoneType object has no attribute 'send keys'"
+
+            # # contact name
+            # contact = browser.find_element_by_xpath('//input[@name="contact_name"]').click()
+            # contact.send_keys(config['contact_name'])
+
             # email
             #email = browser.find_element_by_xpath('//input[@name="FromEMail"]')
             #email.send_keys(config['post_email'])
