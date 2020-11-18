@@ -77,7 +77,8 @@ def get_states_regions():
         return sr_dict
 
 def get_account_creds():
-    client = boto3.client('ssm')
+    session = boto3.Session(profile_name='bdc')
+    client = session.client('ssm')
     uname = client.get_parameter(
         Name = '/apps/craigslist/accounts/ssc1/username'
     )
@@ -94,7 +95,8 @@ def get_account_creds():
     return creds
 
 def get_payment_info():
-    client = boto3.client('ssm')
+    session = boto3.Session(profile_name='bdc')
+    client = session.client('ssm')
     num = client.get_parameter(
         Name = '/payment_cards/ssc/card_number',
         WithDecryption=True
