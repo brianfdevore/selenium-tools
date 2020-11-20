@@ -1,6 +1,9 @@
+# ad_config.json Notes #
 
+# Craigslist Account Credentials & Payment Info #
+This information is stored in AWS SSM Parameter Store, and retrieved via Boto3 client for SSM.
 
-Post Category:
+## post_category ##
 fso = For Sale by Owner
 fsd = For Sale by Dealer
 [fsd] Heavy Equipment value=194 ($5/ad), Farm & Garden value=178 ($3/ad)
@@ -8,5 +11,7 @@ fsd = For Sale by Dealer
 
 Ad fields are the same for fso/fsd, so you can change between the two post types freely (as of 11/11/20).
 
-Craigslist Account Credentials & Payment Info:
-This information is stored in AWS SSM Parameter Store, and retrieved via Boto3 client for SSM.
+## payment_card_code ##
+You must use a code that corresponds to the AWS SSM Parameter Store mapping for your payment card (parameters must be configured in SSM).
+Format for the payment_card_code in the parameter path is:
+/payment_cards/<payment_card_code>/etc/etc/etc

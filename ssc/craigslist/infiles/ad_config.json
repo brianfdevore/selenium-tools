@@ -1,5 +1,5 @@
 {
-    "post_states" : ["Connecticut"],
+    "post_states" : ["Oregon"],
     "post_type" : "fsd",
     "post_category" : "178",
     "post_price" : "795",
@@ -11,5 +11,6 @@
     "he_model" : "All",
     "he_size" : "All",
     "contact_phone" : "8884978898",
-    "contact_name" : "Craig"
+    "contact_name" : "Craig",
+    "pymt_card_code" : 7601
 }

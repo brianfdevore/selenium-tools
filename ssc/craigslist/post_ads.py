@@ -97,47 +97,48 @@ def get_account_creds():
 def get_payment_info():
     session = boto3.Session(profile_name='bdc')
     client = session.client('ssm')
+    config = get_config()
     num = client.get_parameter(
-        Name = '/payment_cards/ssc/card_number',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/card_number',
         WithDecryption=True
     )
     exp = client.get_parameter(
-        Name = '/payment_cards/ssc/expiration',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/expiration',
         WithDecryption=True
     )
 
     cvv = client.get_parameter(
-        Name = '/payment_cards/ssc/cvv',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/cvv',
         WithDecryption=True
     )
 
     add = client.get_parameter(
-        Name = '/payment_cards/ssc/address',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/address',
         WithDecryption=True
     )
 
     first = client.get_parameter(
-        Name = '/payment_cards/ssc/first_name',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/first_name',
         WithDecryption=True
     )
 
     last = client.get_parameter(
-        Name = '/payment_cards/ssc/last_name',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/last_name',
         WithDecryption=True
     )
 
     city = client.get_parameter(
-        Name = '/payment_cards/ssc/city',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/city',
         WithDecryption=True
     )
 
     state = client.get_parameter(
-        Name = '/payment_cards/ssc/state',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/state',
         WithDecryption=True
     )
 
     zip = client.get_parameter(
-        Name = '/payment_cards/ssc/zip',
+        Name = '/payment_cards/' + str(config['pymt_card_code']) + '/zip',
         WithDecryption=True
     )
 
@@ -257,18 +258,22 @@ def post_ads():
             # continue button
             browser.find_element_by_xpath('//button[@name="go" and @value="continue"]').click()
 
-            # continue button
-            browser.find_element_by_xpath('//button[@class="continue bigbutton"]').click()
+            # continue button (not present on all flows such as for Canberra CT)
+            try:
+                browser.find_element_by_xpath('//button[@class="continue bigbutton"]').click()
+            except:
+                print("Error: //button[@class=continue bigbutton] not found.")
 
             # continue button (in case we are prompted to keep old location/area, and need to choose one of the 2 options)
             try:
                 browser.find_element_by_xpath('//button[@class="continue medium-pickbutton" and @name="keep_old_area"]').click()
             except:
                 print("Error")
-            finally:
-                # send images (using classic image upload link)
-                browser.find_element_by_xpath('//a[@id="classic"]').click()
-                add_images = browser.find_element_by_xpath('//input[@name="file"]')
+
+            # send images (using classic image upload link)
+            time.sleep(0.5)
+            browser.find_element_by_xpath('//a[@id="classic"]').click()
+            add_images = browser.find_element_by_xpath('//input[@name="file"]')
 
             img = []
             path = 'images'
