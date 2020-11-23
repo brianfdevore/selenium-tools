@@ -1,5 +1,6 @@
 {
-    "post_states" : ["Oregon"],
+    "aws_profile" : "bdc",
+    "post_states" : ["Virginia"],
     "post_type" : "fsd",
     "post_category" : "178",
     "post_price" : "795",
@@ -12,5 +13,5 @@
     "he_size" : "All",
     "contact_phone" : "8884978898",
     "contact_name" : "Craig",
-    "pymt_card_code" : 7601
+    "pymt_card_code" : "7601"
 }

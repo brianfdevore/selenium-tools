@@ -7,6 +7,26 @@ import os.path
 import json
 import click
 import boto3
+import logging
+
+# Create a custom logger
+logger = logging.getLogger(__name__)
+
+# Create handlers for the custom logger
+c_handler = logging.StreamHandler()
+f_handler = logging.FileHandler('post_ads.log', mode="a")
+c_handler.setLevel(logging.DEBUG)
+f_handler.setLevel(logging.DEBUG)
+
+# Create formatters and add them to the handlers
+c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+c_handler.setFormatter(c_format)
+f_handler.setFormatter(f_format)
+
+# Add handlers to the logger
+logger.addHandler(c_handler)
+logger.addHandler(f_handler)
 
 def find(browser):
     add_images = browser.find_element_by_xpath('//input[@name="file"]')
@@ -95,9 +115,9 @@ def get_account_creds():
     return creds
 
 def get_payment_info():
-    session = boto3.Session(profile_name='bdc')
-    client = session.client('ssm')
     config = get_config()
+    session = boto3.Session(profile_name=str(config['aws_profile']))
+    client = session.client('ssm')
     num = client.get_parameter(
         Name = '/payment_cards/' + str(config['pymt_card_code']) + '/card_number',
         WithDecryption=True
@@ -159,182 +179,195 @@ def get_payment_info():
 def post_ads():
     config = get_config()
     states_regions_dict = get_states_regions()
-        
-    # iterate through post_states, and nested regions to post an ad for each
+
+    # check to make sure there are states specified in config file
+    if not config['post_states']:
+        logger.error('No states were specified in the ad_config.json configuration file.')
+        exit()
+
+    # iterate through post_states and nested regions to post an ad for each
     for state in config['post_states']:
         for region, ui_id in states_regions_dict[state].items():
-            print('Posting ad in: [%s] [%s]' % (region, state))    
-            browser = do_browser_init()   
-    
-            # post location
-            browser.find_element_by_class_name('ui-selectmenu-text').click()
-            #browser.find_element_by_xpath('//li[@id="ui-id-28"]').click()
-            browser.find_element_by_xpath("//li[@id='" + ui_id + "']").click()
-            browser.find_element_by_xpath('//button[@name="go"]').click()
-
-
-            # post type (For Sale By Dealer = fsd, For Sale By Owner = fso)
-            browser.find_element_by_xpath("//input[@name='id' and @value='" + config['post_type'] + "']").click()
-            #browser.find_element_by_xpath('//input[@name="id" and @value="fso"]').click()
-
-            # post category
-            browser.find_element_by_xpath("//input[@name='id' and @value='" + config['post_category'] + "']").click()
-            #browser.find_element_by_xpath('//input[@name="id" and @value="178"]').click()
-
-            # main post page
-            title_area = browser.find_element_by_xpath('//input[@name="PostingTitle" and @id="PostingTitle"]')
-            title_area.send_keys(config['post_title'])
-            city = browser.find_element_by_xpath('//input[@name="geographic_area" and @id="geographic_area"]')
-            city.send_keys(config['post_city'])
-            postal_code = browser.find_element_by_xpath('//input[@name="postal" and @id="postal_code"]')
-            postal_code.send_keys(int(config['postal_code']))
-            time.sleep(1)
-
-            # main text section | HTML markup is okay here (https://www.craigslist.org/about/help/html_in_craigslist_postings/details)
-            main_text = browser.find_element_by_xpath('//textarea[@name="PostingBody" and @id="PostingBody"]')
-
-            # open main_text.html file and send that text into the main text field
-            with open('.\\infiles\\main_text.html', encoding="utf8") as f:
-                lines = f.readlines()
-                for line in lines:
-                    main_text.send_keys(line)
-
-            # another way to do it...
-            # main_text.send_keys("<h1>SkidSteerCabs.com</h1>")
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys("Visist our website to view products and pricing at: <a href='https://www.skidsteercabs.com'>www.skidsteercabs.com</a>")
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys('You can also give us a call at (888) 497-8898 or click the chat button on our home page to talk to a real human right now.')
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys("We have cab enclosure kits, polycarbonate replacement slugs for your door glass, a full line of attchments, heaters, wipers, and more!")
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys('If you need help getting warm and dry, increasing operator safety, or finding the right attachment to boost productivity for your skid steer, we have got what you need!')
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys(Keys.ENTER)
-            # main_text.send_keys("Give us a call today for pricing and availability for your machine: (888) 497-8898")
-
-            # price
-            price = browser.find_element_by_xpath('//input[@name="price"]')
-            price.send_keys(int(config['post_price']))
-
-            # make/manufacturer
-            make = browser.find_element_by_xpath('//input[@name="sale_manufacturer"]')
-            make.send_keys(config['he_manufacturer'])
-
-            # model name/number
-            model = browser.find_element_by_xpath('//input[@name="sale_model"]')
-            model.send_keys(config['he_model'])
-
-            # size/dimensions
-            size = browser.find_element_by_xpath('//input[@name="sale_size"]')
-            size.send_keys(config['he_size'])
-            
-            # condition
-            browser.find_element_by_xpath('//span[@id="ui-id-2-button"]').click()
-            browser.find_element_by_xpath('//li[@id="ui-id-4"]').click()
-
-            # # show my phone number
-            # browser.find_element_by_xpath('//input[@name="show_phone_ok"]').click()
-
-            # # phone calls okay
-            # browser.find_element_by_xpath('//input[@name="contact_phone_ok"]').click()
-
-            # # phone number
-            # phone = browser.find_element_by_xpath('//input[@name="contact_phone"]').click()
-            # phone.send_keys(config['contact_phone'])  #<-- failing here with "NoneType object has no attribute 'send keys'"
-
-            # # contact name
-            # contact = browser.find_element_by_xpath('//input[@name="contact_name"]').click()
-            # contact.send_keys(config['contact_name'])
-
-            # email
-            #email = browser.find_element_by_xpath('//input[@name="FromEMail"]')
-            #email.send_keys(config['post_email'])
-
-            # continue button
-            browser.find_element_by_xpath('//button[@name="go" and @value="continue"]').click()
-
-            # continue button (not present on all flows such as for Canberra CT)
             try:
-                browser.find_element_by_xpath('//button[@class="continue bigbutton"]').click()
-            except:
-                print("Error: //button[@class=continue bigbutton] not found.")
+                logger.info('Posting ad in: [%s] [%s]' % (region, state))    
+                browser = do_browser_init()   
+        
+                # post location
+                browser.find_element_by_class_name('ui-selectmenu-text').click()
+                #browser.find_element_by_xpath('//li[@id="ui-id-28"]').click()
+                browser.find_element_by_xpath("//li[@id='" + ui_id + "']").click()
+                browser.find_element_by_xpath('//button[@name="go"]').click()
 
-            # continue button (in case we are prompted to keep old location/area, and need to choose one of the 2 options)
-            try:
-                browser.find_element_by_xpath('//button[@class="continue medium-pickbutton" and @name="keep_old_area"]').click()
-            except:
-                print("Error")
 
-            # send images (using classic image upload link)
-            time.sleep(0.5)
-            browser.find_element_by_xpath('//a[@id="classic"]').click()
-            add_images = browser.find_element_by_xpath('//input[@name="file"]')
+                # post type (For Sale By Dealer = fsd, For Sale By Owner = fso)
+                browser.find_element_by_xpath("//input[@name='id' and @value='" + config['post_type'] + "']").click()
+                #browser.find_element_by_xpath('//input[@name="id" and @value="fso"]').click()
 
-            img = []
-            path = 'images'
-            valid_image = ['.jpg', '.gif', '.png', '.tga']
-            for f in os.listdir(path):
-                ext = os.path.splitext(f)[1]
-                if ext.lower() not in valid_image:
-                    continue
-                print(f)
-                img.append(f'/images/{f}')
+                # post category
+                browser.find_element_by_xpath("//input[@name='id' and @value='" + config['post_category'] + "']").click()
+                #browser.find_element_by_xpath('//input[@name="id" and @value="178"]').click()
 
-            for i in sorted(img):
-                if add_images != False:
-                    print(os.getcwd() + i)
-                    add_images.send_keys(os.getcwd() + i)
-                    add_images = WebDriverWait(browser, 3).until(find)
-                else:
-                    continue
+                # main post page
+                title_area = browser.find_element_by_xpath('//input[@name="PostingTitle" and @id="PostingTitle"]')
+                title_area.send_keys(config['post_title'])
+                city = browser.find_element_by_xpath('//input[@name="geographic_area" and @id="geographic_area"]')
+                city.send_keys(config['post_city'])
+                postal_code = browser.find_element_by_xpath('//input[@name="postal" and @id="postal_code"]')
+                postal_code.send_keys(int(config['postal_code']))
+                time.sleep(1)
 
-            # done with images button
-            browser.find_element_by_xpath('//button[@value="Done with Images"]').click()
+                # main text section | HTML markup is okay here (https://www.craigslist.org/about/help/html_in_craigslist_postings/details)
+                main_text = browser.find_element_by_xpath('//textarea[@name="PostingBody" and @id="PostingBody"]')
 
-            # publish button (last step for ad creation, commits purchase)
-            browser.find_element_by_xpath('//button[@value="Continue"]').click()
+                # open main_text.html file and send that text into the main text field
+                with open('.\\infiles\\main_text.html', encoding="utf8") as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        main_text.send_keys(line)
 
-            # click the continue button to proceed with payment for the post
-            browser.find_element_by_xpath('//button[@name="go"]').click()
+                # another way to do it...
+                # main_text.send_keys("<h1>SkidSteerCabs.com</h1>")
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys("Visist our website to view products and pricing at: <a href='https://www.skidsteercabs.com'>www.skidsteercabs.com</a>")
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys('You can also give us a call at (888) 497-8898 or click the chat button on our home page to talk to a real human right now.')
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys("We have cab enclosure kits, polycarbonate replacement slugs for your door glass, a full line of attchments, heaters, wipers, and more!")
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys('If you need help getting warm and dry, increasing operator safety, or finding the right attachment to boost productivity for your skid steer, we have got what you need!')
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys(Keys.ENTER)
+                # main_text.send_keys("Give us a call today for pricing and availability for your machine: (888) 497-8898")
 
-            # submit the payment card info on the payment page
-            card = get_payment_info()
-            f_name = browser.find_element_by_xpath('//input[@id="cardFirstName"]')
-            f_name.send_keys(card['first_name'])
-            l_name = browser.find_element_by_xpath('//input[@id="cardLastName"]')
-            l_name.send_keys(card['last_name'])
-            number = browser.find_element_by_xpath('//input[@id="cardNumber"]')
-            number.send_keys(card['card_number'])
-            exp_date = browser.find_element_by_xpath('//input[@id="expDate"]')
-            exp_date.send_keys(card['expiration_date'])
-            cvv = browser.find_element_by_xpath('//input[@id="cvNumber"]')
-            cvv.send_keys(card['cvv'])
-            address = browser.find_element_by_xpath('//input[@name="cardAddress"]')
-            address.send_keys(card['address'])
-            zip = browser.find_element_by_xpath('//input[@id="cardPostal"]')
-            zip.send_keys(card['zip_code'])
-            # city = browser.find_element_by_xpath('//input[@id="cardCity"]')
-            # city.send_keys(card['city'])
-            # state = browser.find_element_by_xpath('//input[@id="cardState"]')
-            # state.send_keys(card['state'])
-            time.sleep(1)
-            browser.find_element_by_xpath('//button[@id="submitter"]').click()
-            time.sleep(15)
+                # price
+                price = browser.find_element_by_xpath('//input[@name="price"]')
+                price.send_keys(int(config['post_price']))
 
-            # close the browser instance
-            browser.quit()
+                # make/manufacturer
+                make = browser.find_element_by_xpath('//input[@name="sale_manufacturer"]')
+                make.send_keys(config['he_manufacturer'])
 
+                # model name/number
+                model = browser.find_element_by_xpath('//input[@name="sale_model"]')
+                model.send_keys(config['he_model'])
+
+                # size/dimensions
+                size = browser.find_element_by_xpath('//input[@name="sale_size"]')
+                size.send_keys(config['he_size'])
+                
+                # condition
+                browser.find_element_by_xpath('//span[@id="ui-id-2-button"]').click()
+                browser.find_element_by_xpath('//li[@id="ui-id-4"]').click()
+
+                # # show my phone number
+                # browser.find_element_by_xpath('//input[@name="show_phone_ok"]').click()
+
+                # # phone calls okay
+                # browser.find_element_by_xpath('//input[@name="contact_phone_ok"]').click()
+
+                # # phone number
+                # phone = browser.find_element_by_xpath('//input[@name="contact_phone"]').click()
+                # phone.send_keys(config['contact_phone'])  #<-- failing here with "NoneType object has no attribute 'send keys'"
+
+                # # contact name
+                # contact = browser.find_element_by_xpath('//input[@name="contact_name"]').click()
+                # contact.send_keys(config['contact_name'])
+
+                # email
+                #email = browser.find_element_by_xpath('//input[@name="FromEMail"]')
+                #email.send_keys(config['post_email'])
+
+                # continue button
+                browser.find_element_by_xpath('//button[@name="go" and @value="continue"]').click()
+
+                # continue button (not present on all flows such as for Canberra CT)
+                try:
+                    browser.find_element_by_xpath('//button[@class="continue bigbutton"]').click()
+                except Exception:
+                    logger.exception("Exception occurred")
+
+                # continue button (in case we are prompted to keep old location/area, and need to choose one of the 2 options)
+                try:
+                    browser.find_element_by_xpath('//button[@class="continue medium-pickbutton" and @name="keep_old_area"]').click()
+                except Exception:
+                    logger.exception("Exception occurred")
+
+                # send images (using classic image upload link)
+                time.sleep(0.5)
+                logger.info('Uploading images')
+                browser.find_element_by_xpath('//a[@id="classic"]').click()
+                add_images = browser.find_element_by_xpath('//input[@name="file"]')
+
+                img = []
+                path = 'images'
+                valid_image = ['.jpg', '.gif', '.png', '.tga']
+                for f in os.listdir(path):
+                    ext = os.path.splitext(f)[1]
+                    if ext.lower() not in valid_image:
+                        continue
+                    print(f)
+                    img.append(f'/images/{f}')
+
+                for i in sorted(img):
+                    if add_images != False:
+                        print(os.getcwd() + i)
+                        add_images.send_keys(os.getcwd() + i)
+                        add_images = WebDriverWait(browser, 3).until(find)
+                    else:
+                        continue
+
+                # done with images button
+                browser.find_element_by_xpath('//button[@value="Done with Images"]').click()
+                logger.info('Images uploaded')
+
+                # publish button (last step for ad creation, commits purchase)
+                browser.find_element_by_xpath('//button[@value="Continue"]').click()
+                
+                # click the continue button to proceed with payment for the post
+                browser.find_element_by_xpath('//button[@name="go"]').click()
+
+                # submit the payment card info on the payment page
+                logger.info('Beginning payment')
+                card = get_payment_info()
+                f_name = browser.find_element_by_xpath('//input[@id="cardFirstName"]')
+                f_name.send_keys(card['first_name'])
+                l_name = browser.find_element_by_xpath('//input[@id="cardLastName"]')
+                l_name.send_keys(card['last_name'])
+                number = browser.find_element_by_xpath('//input[@id="cardNumber"]')
+                number.send_keys(card['card_number'])
+                exp_date = browser.find_element_by_xpath('//input[@id="expDate"]')
+                exp_date.send_keys(card['expiration_date'])
+                cvv = browser.find_element_by_xpath('//input[@id="cvNumber"]')
+                cvv.send_keys(card['cvv'])
+                address = browser.find_element_by_xpath('//input[@name="cardAddress"]')
+                address.send_keys(card['address'])
+                zip = browser.find_element_by_xpath('//input[@id="cardPostal"]')
+                zip.send_keys(card['zip_code'])
+                # city = browser.find_element_by_xpath('//input[@id="cardCity"]')
+                # city.send_keys(card['city'])
+                # state = browser.find_element_by_xpath('//input[@id="cardState"]')
+                # state.send_keys(card['state'])
+                time.sleep(1)
+                browser.find_element_by_xpath('//button[@id="submitter"]').click()
+                time.sleep(15)
+                logger.info('Payment submitted and ad published')
+
+                # close the browser instance
+                browser.quit()
+                logger.info('Browser closed')
+            except Exception:
+                logger.exception("Exception occurred")
+                browser.quit()   
 
 def main():
     if confirm_proceed():
         post_ads()
     else:
-        print('Job cancelled...')
+        logger.info('Job cancelled by user.')
         time.sleep(1.5)
         exit()
 
