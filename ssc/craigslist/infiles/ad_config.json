@@ -1,6 +1,6 @@
 {
     "aws_profile" : "bdc",
-    "post_states" : ["Virginia"],
+    "post_states" : ["Pennsylvania"],
     "post_type" : "fsd",
     "post_category" : "178",
     "post_price" : "795",

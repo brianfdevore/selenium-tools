@@ -11,16 +11,17 @@ import logging
 
 # Create a custom logger
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 # Create handlers for the custom logger
 c_handler = logging.StreamHandler()
 f_handler = logging.FileHandler('post_ads.log', mode="a")
-c_handler.setLevel(logging.DEBUG)
+c_handler.setLevel(logging.WARNING)
 f_handler.setLevel(logging.DEBUG)
 
 # Create formatters and add them to the handlers
-c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+c_format = logging.Formatter('%(levelname)s - %(message)s')
+f_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 c_handler.setFormatter(c_format)
 f_handler.setFormatter(f_format)
 
@@ -182,14 +183,16 @@ def post_ads():
 
     # check to make sure there are states specified in config file
     if not config['post_states']:
-        logger.error('No states were specified in the ad_config.json configuration file.')
+        logger.error('No states were specified in the ad_config.json configuration file, terminating program.')
         exit()
 
     # iterate through post_states and nested regions to post an ad for each
+    logger.debug('## SESSION START ##')
     for state in config['post_states']:
+        logger.debug('STARTING ' + state.upper())
         for region, ui_id in states_regions_dict[state].items():
             try:
-                logger.info('Posting ad in: [%s] [%s]' % (region, state))    
+                logger.debug('Posting ad in: [%s] [%s]' % (region, state))    
                 browser = do_browser_init()   
         
                 # post location
@@ -288,17 +291,17 @@ def post_ads():
                 try:
                     browser.find_element_by_xpath('//button[@class="continue bigbutton"]').click()
                 except Exception:
-                    logger.exception("Exception occurred")
+                    logger.debug("Exception occurred while attempting to find Continue button (line 290).")
 
                 # continue button (in case we are prompted to keep old location/area, and need to choose one of the 2 options)
                 try:
                     browser.find_element_by_xpath('//button[@class="continue medium-pickbutton" and @name="keep_old_area"]').click()
                 except Exception:
-                    logger.exception("Exception occurred")
+                    logger.debug("Area button not found (line 298)")
 
                 # send images (using classic image upload link)
                 time.sleep(0.5)
-                logger.info('Uploading images')
+                logger.debug('Beginning image uploads')
                 browser.find_element_by_xpath('//a[@id="classic"]').click()
                 add_images = browser.find_element_by_xpath('//input[@name="file"]')
 
@@ -320,9 +323,10 @@ def post_ads():
                     else:
                         continue
 
+                logger.debug('Image uploads completed')
+
                 # done with images button
                 browser.find_element_by_xpath('//button[@value="Done with Images"]').click()
-                logger.info('Images uploaded')
 
                 # publish button (last step for ad creation, commits purchase)
                 browser.find_element_by_xpath('//button[@value="Continue"]').click()
@@ -331,7 +335,7 @@ def post_ads():
                 browser.find_element_by_xpath('//button[@name="go"]').click()
 
                 # submit the payment card info on the payment page
-                logger.info('Beginning payment')
+                logger.debug('Beginning payment submission')
                 card = get_payment_info()
                 f_name = browser.find_element_by_xpath('//input[@id="cardFirstName"]')
                 f_name.send_keys(card['first_name'])
@@ -353,14 +357,15 @@ def post_ads():
                 # state.send_keys(card['state'])
                 time.sleep(1)
                 browser.find_element_by_xpath('//button[@id="submitter"]').click()
-                time.sleep(15)
-                logger.info('Payment submitted and ad published')
+                time.sleep(10)
+                logger.debug('Payment submitted and ad published')
 
                 # close the browser instance
                 browser.quit()
-                logger.info('Browser closed')
+                logger.debug('Browser closed, successful post in: [%s] [%s]' % (region, state))
+
             except Exception:
-                logger.exception("Exception occurred")
+                logger.exception("Exception occurred:")
                 browser.quit()   
 
 def main():
