@@ -2,7 +2,7 @@
     "aws_profile" : "bdc",
     "post_states" : ["Pennsylvania"],
     "post_type" : "fsd",
-    "post_category" : "178",
+    "post_category" : "194",
     "post_price" : "795",
     "post_email" : "sales@skidsteercabs.com",
     "post_city" : "Frostburg, MD",
@@ -11,7 +11,7 @@
     "he_manufacturer" : "All",
     "he_model" : "All",
     "he_size" : "All",
-    "contact_phone" : "8884978898",
-    "contact_name" : "Craig",
-    "pymt_card_code" : "7601"
+    "contact_phone" : "2403011225",
+    "contact_name" : "Nathan",
+    "pymt_card_code" : "5535"
 }

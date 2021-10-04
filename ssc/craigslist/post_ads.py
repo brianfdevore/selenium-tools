@@ -266,19 +266,23 @@ def post_ads():
                 browser.find_element_by_xpath('//span[@id="ui-id-2-button"]').click()
                 browser.find_element_by_xpath('//li[@id="ui-id-4"]').click()
 
-                # # show my phone number
-                # browser.find_element_by_xpath('//input[@name="show_phone_ok"]').click()
+                # show my phone number
+                browser.find_element_by_xpath('//input[@name="show_phone_ok"]').click()
 
-                # # phone calls okay
-                # browser.find_element_by_xpath('//input[@name="contact_phone_ok"]').click()
+                # phone calls OK
+                browser.find_element_by_xpath('//input[@name="contact_phone_ok"]').click()
 
-                # # phone number
-                # phone = browser.find_element_by_xpath('//input[@name="contact_phone"]').click()
-                # phone.send_keys(config['contact_phone'])  #<-- failing here with "NoneType object has no attribute 'send keys'"
+                # text/sms OK
+                browser.find_element_by_xpath('//input[@name="contact_text_ok"]').click()
+                time.sleep(0.5)
 
-                # # contact name
-                # contact = browser.find_element_by_xpath('//input[@name="contact_name"]').click()
-                # contact.send_keys(config['contact_name'])
+                # phone number
+                phone = browser.find_element_by_xpath('//input[@name="contact_phone"]')
+                phone.send_keys(config['contact_phone'])  #<-- failing here with "NoneType object has no attribute 'send keys'", when .click() is used
+
+                # contact name
+                contact = browser.find_element_by_xpath('//input[@name="contact_name"]')
+                contact.send_keys(config['contact_name']) #<-- failing here with "NoneType object has no attribute 'send keys'", when .click() is used
 
                 # email
                 #email = browser.find_element_by_xpath('//input[@name="FromEMail"]')
@@ -332,7 +336,7 @@ def post_ads():
                 browser.find_element_by_xpath('//button[@value="Continue"]').click()
                 
                 # click the continue button to proceed with payment for the post
-                browser.find_element_by_xpath('//button[@name="go"]').click()
+                # browser.find_element_by_xpath('//button[@name="go"]').click() 
 
                 # submit the payment card info on the payment page
                 logger.debug('Beginning payment submission')
